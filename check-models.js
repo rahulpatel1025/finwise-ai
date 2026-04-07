@@ -1,4 +1,8 @@
-const apiKey = "AIzaSyBHLd0YW1q70gk5oFSrKkMeIchK_wBA_Vw"; // I copied this from your log
+// 1. Tell Node to load variables from the .env.local file
+require('dotenv').config({ path: '.env.local' });
+
+// 2. Now process.env will successfully pull the key
+const apiKey = process.env.GEMINI_API_KEY;
 
 async function checkModels() {
   const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
@@ -11,7 +15,7 @@ async function checkModels() {
     if (data.models) {
       data.models.forEach(model => {
         // We only care about models that can generate content
-        if (model.supportedGenerationMethods.includes("generateContent")) {
+        if (model.supportedGenerationMethods && model.supportedGenerationMethods.includes("generateContent")) {
           console.log(`Model Name: ${model.name.replace("models/", "")}`);
         }
       });

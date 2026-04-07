@@ -4,22 +4,23 @@ import { useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import ChatLayout from "@/components/chat/ChatLayout";
 import ChatInput from "@/components/chat/ChatInput";
-import ChatMessage from "@/components/chat/ChatMessage"; // 🔥 Imported your new component
+import ChatMessage from "@/components/chat/ChatMessage";
+// 🔥 Import BOTH ChatProvider and useChat
+import { ChatProvider, useChat } from "@/components/context/ChatContext"; 
 
-export default function StockPage() {
-  const [messages, setMessages] = useState([]);
+// 1️⃣ Rename your main function to something else (e.g., StockChat)
+function StockChat() {
+  const { currentMessages, addMessage } = useChat(); 
+  
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef(null);
 
-  // Auto scroll
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, loading]);
+  }, [currentMessages, loading]); 
 
-  // 🚀 Smart symbol extractor (stocks + indices)
   const extractSymbol = (text) => {
     const upper = text.toUpperCase();
-
     if (upper.includes("NIFTY 50") || upper.includes("NIFTY")) return "^NSEI";
     if (upper.includes("SENSEX")) return "^BSESN";
     if (upper.includes("DOW JONES")) return "^DJI";
@@ -45,15 +46,13 @@ export default function StockPage() {
   const handleSend = async (text) => {
     if (!text.trim()) return;
 
-    setMessages((prev) => [...prev, { role: "user", text }]);
+    addMessage({ role: "user", text }); 
     setLoading(true);
 
     try {
       const symbol = extractSymbol(text);
 
-      if (!symbol) {
-        throw new Error("No valid stock symbol found.");
-      }
+      if (!symbol) throw new Error("No valid stock symbol found.");
 
       const res = await fetch("/api/advisor", {
         method: "POST",
@@ -62,21 +61,15 @@ export default function StockPage() {
       });
 
       const data = await res.json();
-
       if (data.error) throw new Error(data.error);
 
-      setMessages((prev) => [
-        ...prev,
-        { role: "bot", text: data.explanation },
-      ]);
+      addMessage({ role: "bot", text: data.explanation });
+      
     } catch (err) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "bot",
-          text: "⚠️ Unable to generate analysis. Please enter a valid stock symbol like AAPL, TSLA, MSFT.",
-        },
-      ]);
+      addMessage({
+        role: "bot",
+        text: "⚠️ Unable to generate analysis. Please enter a valid stock symbol like AAPL, TSLA, MSFT.",
+      });
     }
 
     setLoading(false);
@@ -84,13 +77,8 @@ export default function StockPage() {
 
   return (
     <ChatLayout>
-      {/* Removed pb-32 so there is no massive gap at the bottom. 
-        Changed bg-black to transparent so it inherits the sleek dark gray from ChatLayout 
-      */}
       <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-transparent scroll-smooth">
-
-        {/* Empty State */}
-        {messages.length === 0 && (
+        {(!currentMessages || currentMessages.length === 0) && (
           <div className="flex flex-col items-center justify-center h-full text-zinc-500 mt-10 md:mt-20">
             <div className="w-16 h-16 bg-zinc-900 border border-zinc-800 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
               <span className="text-2xl">📈</span>
@@ -105,8 +93,7 @@ export default function StockPage() {
           </div>
         )}
 
-        {/* Mapped Messages using your ChatMessage Component */}
-        {messages.map((msg, i) => (
+        {currentMessages && currentMessages.map((msg, i) => (
           <ChatMessage
             key={i}
             role={msg.role}
@@ -133,7 +120,6 @@ export default function StockPage() {
           />
         ))}
 
-        {/* Native-looking Loading State */}
         {loading && (
           <ChatMessage
             role="bot"
@@ -145,11 +131,18 @@ export default function StockPage() {
             }
           />
         )}
-
         <div ref={bottomRef} className="h-4" />
       </div>
-
       <ChatInput onSend={handleSend} />
     </ChatLayout>
+  );
+}
+
+// 2️⃣ Create a new default export that wraps the chat component in the Provider
+export default function StockPage() {
+  return (
+    <ChatProvider>
+      <StockChat />
+    </ChatProvider>
   );
 }
