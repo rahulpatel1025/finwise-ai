@@ -1,3 +1,7 @@
 {
-    "python-envs.pythonProjects": []
+    "python.defaultInterpreterPath": "${workspaceFolder}/ml_service/.venv/Scripts/python.exe",
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/ml_service",
+        "${workspaceFolder}/ml_service/.venv/Lib/site-packages"
+    ]
 }
