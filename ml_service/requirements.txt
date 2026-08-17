@@ -3,11 +3,10 @@ uvicorn
 pydantic
 tensorflow-cpu==2.15.0
 numpy<2.0
-torch
-transformers
 scikit-learn
 pandas
 yfinance
 beautifulsoup4
 requests
 joblib
+vaderSentiment
