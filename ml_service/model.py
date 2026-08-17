@@ -5,7 +5,10 @@ import numpy as np
 import tensorflow as tf
 import joblib
 
-from lstm_model import fetch_data, LOOKBACK
+try:
+    from .lstm_model import fetch_data, LOOKBACK
+except ImportError:
+    from lstm_model import fetch_data, LOOKBACK
 
 MODEL_PATH = "universal_lstm_model.h5"
 SCALER_PATH = "scaler.save"

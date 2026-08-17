@@ -1,12 +1,24 @@
+import os
+import sys
+
+if __package__ is None or __package__ == "":
+    sys.path.insert(0, os.path.dirname(__file__))
+
 from advisor_text import generate_advisory_text
 from fastapi import FastAPI
 from pydantic import BaseModel
 import uvicorn
 
-from model import run_lstm_prediction, load_model_from_disk
-from sentiment import analyze_sentiment
-from fusion import fusion_engine
-from news_scraper import get_stock_headlines 
+try:
+    from .model import run_lstm_prediction, load_model_from_disk
+    from .sentiment import analyze_sentiment
+    from .fusion import fusion_engine
+    from .news_scraper import get_stock_headlines
+except ImportError:
+    from model import run_lstm_prediction, load_model_from_disk
+    from sentiment import analyze_sentiment
+    from fusion import fusion_engine
+    from news_scraper import get_stock_headlines
 
 app = FastAPI()
 

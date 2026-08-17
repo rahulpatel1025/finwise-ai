@@ -8,7 +8,9 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 // Helper: Call Python ML API
 // -----------------------------
 async function getMLPrediction(symbol) {
-  const response = await fetch("http://127.0.0.1:8000/predict", {
+  const mlBaseUrl =
+    process.env.ML_SERVICE_URL || "http://127.0.0.1:8000";
+  const response = await fetch(`${mlBaseUrl.replace(/\/$/, "")}/predict`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
